@@ -10,8 +10,17 @@ const LINE =
 
 // Gate mirror: the house gate accepts 1-280 characters of non-whitespace
 // text. Fail loudly here rather than write a line the gate would refuse.
+// Count characters the way the gate does (JS string length), and also cap
+// the UTF-8 bytes so a line of wide characters cannot slip past the
+// character count while blowing the size the judge reads.
 if (LINE.length < 1 || LINE.length > 280 || !LINE.trim()) {
   throw new Error(`entry line is ${LINE.length} chars, outside the 1-280 gate`);
+}
+if (Buffer.byteLength(LINE, "utf8") > 280) {
+  throw new Error(`entry line is ${Buffer.byteLength(LINE, "utf8")} bytes, over the 280-byte cap`);
+}
+if (LINE !== LINE.trim()) {
+  throw new Error("entry line has leading or trailing whitespace");
 }
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
